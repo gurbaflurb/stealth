@@ -1,7 +1,9 @@
 gen:
 	@echo "compiling and running"
+	g++ -c net/network.cpp -o net/network.dll
 	g++ -c b64/b64.cpp -o b64/b64.dll
-	g++ main.cpp b64/*.dll -Wall -o main.exe
+	g++ -c argparser/argparser.cpp -o argparser/argparser.dll
+	g++ main.cpp b64/*.dll net/*.dll argparser/*.dll -Wall -o main.exe
 	
 test:
 	@echo "Running Tests:"
@@ -17,11 +19,11 @@ test:
 	@echo "Output should be: Zm9vYmE="
 	./main.exe foobar
 	@echo "Output should be: Zm9vYmFy"
-	.\main.exe test.txt
+	.\main.exe testFiles/test.txt
 	@echo "Output should be: TWFu"
-	.\main.exe test1.txt
+	.\main.exe testFiles/test1.txt
 	@echo "Output should be: TWE="
-	.\main.exe test2.txt
+	.\main.exe testFiles/test2.txt
 	@echo "Output should be: TQ=="
 	.\main.exe Tree
 	@echo "Output should be: VHJlZQ=="

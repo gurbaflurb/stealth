@@ -6,6 +6,9 @@
 *.lo
 *.o
 *.obj
+b64/*.o
+net/*.o
+argparser/*.o
 
 # Precompiled Headers
 *.gch
@@ -15,6 +18,9 @@
 *.so
 *.dylib
 *.dll
+b64/*.dll
+net/*.dll
+argparser/*.dll
 
 # Fortran module files
 *.mod
