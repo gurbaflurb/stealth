@@ -4,45 +4,50 @@
 
 namespace net_conn {
 
+     std::string fake_http_header = "GET / HTTP/1.1\n"
+                                    "Host: www.website.com\n"
+                                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0\n"
+                                    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n"
+                                    "Accept-Language: en-us,en;q=0.5\n"
+                                    "Accept-Encoding: gzip,deflate\n"
+                                    "Keep-Alive: 300\n"
+                                    "Connection: keep-alive\n"
+                                    "Pragma: no-cache\n"
+                                    "Cache-Control: no-cache\n\n";;
+
      #ifdef __linux__
-     #include <unistd.h>
-     #include <netdb.h>
-     #include <sys/types.h>
+     #include <stdio.h>
      #include <sys/socket.h>
-     #include <netinet/in.h>
+     #include <arpa/inet.h>
+     #include <unistd.h>
+     #include <string.h>
 
      void makeConnection(std::string addr, int port, std::string msg) {
-     int sockfd, portno, n;
-     struct sockaddr_in serv_addr;
-     struct hostent *server;
+          int sock = 0, valread;
+          struct sockaddr_in serv_addr;
+          const char *socketMsg = msg.c_str();
+          char buffer[BUFLEN] = {0};
+          
+          serv_addr.sin_family = AF_INET;
+          serv_addr.sin_port = htons(port);
 
-     char buffer[BUFLEN];
+          if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+               throw std::runtime_error("Error creating socket");
+          }
 
-     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-     server = gethostbyname(addr);
+          if(inet_pton(AF_INET, addr.c_str(), &serv_addr.sin_addr) <= 0) {
+               throw std::runtime_error("Invalid address or Address is not currently supported");
+          }
 
-     bzero((char *) &serv_addr, sizeof(serv_addr));
-     serv_addr.sin_family = AF_INET;
-     bcopy((char *)server->h_addr, 
-          (char *)&serv_addr.sin_addr.s_addr,
-          server->h_length);
+          if(connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
+               throw std::runtime_error("Failed to connect to remote server");
+          }
 
-     serv_addr.sin_port = htons(portno);
-     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-          error("ERROR connecting");
-     printf("Please enter the message: ");
-     bzero(buffer,BUFLEN);
-     fgets(buffer,BUFLEN -1,stdin);
-     n = write(sockfd,buffer,strlen(buffer));
-     if (n < 0) 
-          error("ERROR writing to socket");
-     bzero(buffer,BUFLEN);
-     n = read(sockfd,buffer,BUFLEN-1);
-     if (n < 0) 
-          error("ERROR reading from socket");
-     printf("%s\n",buffer);
-     close(sockfd);
-     return 0;
+          valread = read(sock, buffer, BUFLEN);
+          std::cout << "Server sent: " << buffer << std::endl;
+          send(sock, socketMsg, strlen(socketMsg), 0);
+          valread = read(sock, buffer, BUFLEN);
+          std::cout << "Server sent: " << buffer << std::endl;
      }
 
      #elif __WIN32
@@ -98,5 +103,6 @@ namespace net_conn {
           WSACleanup();
      }
 
+     #endif
+
 }
-#endif

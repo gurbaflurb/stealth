@@ -7,6 +7,8 @@
 
 namespace net_conn {
 
+    extern std::string fake_http_header;
+    
     void makeConnection(std::string addr, int port, std::string msg);
 
 }
