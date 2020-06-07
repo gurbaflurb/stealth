@@ -19,6 +19,9 @@ argparser::argparser(int argc, char ** argv) {
         else if(arg == "-v" || arg == "--verbose") {
             set_verbose();
         }
+        else if(arg == "-r" || arg == "--remote") {
+            set_remote_host(argv[i+1]);
+        }
         
     }
     program = argv[0];
@@ -32,7 +35,8 @@ void argparser::print_help() {
     << "\t-p, --port\t\tSet the port the remote server is listening on\n"
     << "\t-v, --verbose\t\tSet verbosity\n"
     << "\t-b, --base64\t\tSet data being exfiltraited to be encoded with base64\n"
-    << "\t-f, --fake-http-headers\t\tAdd fake http headers to each message being sent\n" << std::endl;
+    << "\t-f, --fake-http-headers\t\tAdd fake http headers to each message being sent\n"
+    << "\t-r, --remote\t\tSet Remote server address" << std::endl;
 }
 
 void argparser::set_port(int newPort) {

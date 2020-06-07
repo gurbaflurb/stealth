@@ -1,23 +1,30 @@
-gen:
+gen-windows:
 	@echo "compiling and running"
 	g++ -c net/network.cpp -o net/network.dll
 	g++ -c b64/b64.cpp -o b64/b64.dll
 	g++ -c argparser/argparser.cpp -o argparser/argparser.dll
-	g++ main.cpp b64/*.dll net/*.dll argparser/*.dll -Wall -o main.exe
+	g++ main.cpp b64/*.dll net/*.dll argparser/*.dll -lws2_32 -Wall -o main.exe
+
+gen-linux:
+	@echo "compiling and running"
+	g++ -c net/network.cpp -o net/network.o
+	g++ -c b64/b64.cpp -o b64/b64.o
+	g++ -c argparser/argparser.cpp -o argparser/argparser.o
+	g++ main.cpp b64/*.o net/*.o argparser/*.o -Wall -o main.exe
 	
 test:
 	@echo "Running Tests:"
-	./main.exe f
+	.\main.exe f
 	@echo "Output should be: Zg=="
-	./main.exe fo
+	.\main.exe fo
 	@echo "Output should be: Zm8="
-	./main.exe foo
+	.\main.exe foo
 	@echo "Output should be: Zm9v"
-	./main.exe foob
+	.\main.exe foob
 	@echo "Output should be: Zm9vYg=="
-	./main.exe fooba
+	.\main.exe fooba
 	@echo "Output should be: Zm9vYmE="
-	./main.exe foobar
+	.\main.exe foobar
 	@echo "Output should be: Zm9vYmFy"
 	.\main.exe testFiles/test.txt
 	@echo "Output should be: TWFu"
