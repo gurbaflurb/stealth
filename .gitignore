@@ -1,3 +1,6 @@
+# python test files
+testServer.py
+
 # Prerequisites
 *.d
 .vscode

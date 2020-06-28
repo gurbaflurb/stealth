@@ -1,6 +1,7 @@
 #include "argparser.h"
 
-argparser::argparser(int argc, char ** argv) {
+argparser::argparser(int argc, char ** argv, std::string newMode) {
+    mode = newMode;
     for(int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if(arg == "-h" || arg == "--help"){
@@ -22,6 +23,9 @@ argparser::argparser(int argc, char ** argv) {
         else if(arg == "-r" || arg == "--remote") {
             set_remote_host(argv[i+1]);
         }
+        else if(arg == "-d" || arg == "--data") {
+            set_data(argv[i+1]);
+        }
         
     }
     program = argv[0];
@@ -36,7 +40,8 @@ void argparser::print_help() {
     << "\t-v, --verbose\t\tSet verbosity\n"
     << "\t-b, --base64\t\tSet data being exfiltraited to be encoded with base64\n"
     << "\t-f, --fake-http-headers\t\tAdd fake http headers to each message being sent\n"
-    << "\t-r, --remote\t\tSet Remote server address" << std::endl;
+    << "\t-r, --remote\t\tSet Remote server address\n" 
+    << "\t-d, --data\t\tFile or text that will be encoded and sent over a wire" << std::endl;
 }
 
 void argparser::set_port(int newPort) {
@@ -72,4 +77,15 @@ void argparser::set_base64_obfuscation() {
 }
 bool argparser::get_base64_obfuscation() {
     return base64_encode;
+}
+
+void argparser::set_data(std::string newData) {
+    data = newData;
+}
+std::string argparser::get_data() {
+    return data;
+}
+
+std::string argparser::get_mode() {
+    return mode;
 }

@@ -13,7 +13,8 @@ namespace net_conn {
                                     "Keep-Alive: 300\n"
                                     "Connection: keep-alive\n"
                                     "Pragma: no-cache\n"
-                                    "Cache-Control: no-cache\n\n";;
+                                    "Cache-Control: no-cache\n\n";
+     
 
      #ifdef __linux__
      #include <stdio.h>
@@ -43,11 +44,11 @@ namespace net_conn {
                throw std::runtime_error("Failed to connect to remote server");
           }
 
-          valread = read(sock, buffer, BUFLEN);
-          std::cout << "Server sent: " << buffer << std::endl;
           send(sock, socketMsg, strlen(socketMsg), 0);
+
           valread = read(sock, buffer, BUFLEN);
           std::cout << "Server sent: " << buffer << std::endl;
+          
      }
 
      #elif __WIN32
@@ -57,7 +58,7 @@ namespace net_conn {
 
      #pragma comment (lib, "ws2_32.lib")
 
-     void makeConnection(std::string addr, int port, std::string msg) {
+     void makeConnection(std::string addr, std::string msg, int port) {
           WSAData wsaData;
           SOCKET client;
           const char *socketAddr = addr.c_str();
@@ -81,15 +82,9 @@ namespace net_conn {
           if(connect(client, (struct sockaddr *)&server, sizeof(server)) < 0) {
                throw std::runtime_error("Failed to connect to server!");
           }
-          std::cout << "Connected to server " << addr << "!" << std::endl;
-          
-          if((recv_size = recv(client, server_reply, BUFLEN, 0)) == SOCKET_ERROR) {
-               throw std::runtime_error("Recv failed!");
-          }
-          server_reply[recv_size] = '\0';
-          std::cout << server_reply << std::endl;
+          std::cout << "Connected!" << std::endl;
 
-          if(send(client, message, strlen(message), 0) < 0) {
+          if(send(client, msg.c_str(), strlen(message), 0) < 0) {
                throw std::runtime_error("Failure to send message");
           }
 
@@ -97,7 +92,7 @@ namespace net_conn {
                throw std::runtime_error("Recv failed!");
           }
           server_reply[recv_size] = '\0';
-          std::cout << server_reply << std::endl;
+          std::cout << "From: " << server_reply << std::endl;
 
           closesocket(client);
           WSACleanup();

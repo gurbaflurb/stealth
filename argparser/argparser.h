@@ -8,13 +8,15 @@ class argparser{
     private:
         std::string remoteHost;
         std::string program;
+        std::string data = "";
+        std::string mode = "";
         bool base64_encode = false;
         bool verbose = false;
         bool fake_http_headers = false;
         int port = 80;
 
     public:
-        argparser(int argc, char ** argv);
+        argparser(int argc, char ** argv, std::string);
 
         void print_help();
 
@@ -32,6 +34,11 @@ class argparser{
 
         void set_base64_obfuscation();
         bool get_base64_obfuscation();
+
+        void set_data(std::string);
+        std::string get_data();
+
+        std::string get_mode();
 
 };
 
