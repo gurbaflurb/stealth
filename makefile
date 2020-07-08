@@ -1,30 +1,19 @@
-gen-windows:
+windows:
 	@echo "compiling and running"
 	g++ -c net/network.cpp -o net/network.dll
 	g++ -c b64/b64.cpp -o b64/b64.dll
 	g++ -c argparser/argparser.cpp -o argparser/argparser.dll
 	g++ server.cpp b64/*.dll net/*.dll argparser/*.dll -lws2_32 -Wall -o server.exe
-
-gen-windows-client:
-	@echo "compiling and running"
-	g++ -c net/network.cpp -o net/network.dll
-	g++ -c b64/b64.cpp -o b64/b64.dll
-	g++ -c argparser/argparser.cpp -o argparser/argparser.dll
 	g++ client.cpp -static b64/*.dll net/*.dll argparser/*.dll -lws2_32 -Wall -o client.exe
 
-gen-linux:
+linux:
 	@echo "compiling and running"
 	g++ -c net/network.cpp -o net/network.o
 	g++ -c b64/b64.cpp -o b64/b64.o
 	g++ -c argparser/argparser.cpp -o argparser/argparser.o
 	g++ server.cpp b64/*.o net/*.o argparser/*.o -Wall -o server
-
-gen-linux-client:
-	@echo "compiling and running"
-	g++ -c net/network.cpp -o net/network.o
-	g++ -c b64/b64.cpp -o b64/b64.o
-	g++ -c argparser/argparser.cpp -o argparser/argparser.o
 	g++ client.cpp -static b64/*.o net/*.o argparser/*.o -Wall -o client
+
 	
 test:
 	@echo "Running Tests:"

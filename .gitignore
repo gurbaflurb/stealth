@@ -1,5 +1,5 @@
-# python test files
-testServer.py
+# python files
+*.py
 
 # Prerequisites
 *.d

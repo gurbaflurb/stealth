@@ -1,19 +1,20 @@
 #include <iostream>
 #include <cstdlib>
 #include "network.h"
+#include "../b64/b64.h"
 
 namespace net_conn {
 
-     std::string fake_http_header = "GET / HTTP/1.1\n"
-                                    "Host: www.website.com\n"
-                                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0\n"
-                                    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n"
-                                    "Accept-Language: en-us,en;q=0.5\n"
-                                    "Accept-Encoding: gzip,deflate\n"
-                                    "Keep-Alive: 300\n"
-                                    "Connection: keep-alive\n"
-                                    "Pragma: no-cache\n"
-                                    "Cache-Control: no-cache\n\n";
+     std::string fake_http_header = "GET / HTTP/1.1\n\r"
+                                    "Host: www.website.com\n\r"
+                                    "User-Agent: Perseverance/1.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Perseverance/1.5\n\r"
+                                    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n\r"
+                                    "Accept-Language: en-us,en;q=0.5\n\r"
+                                    "Accept-Encoding: gzip,deflate\n\r"
+                                    "Keep-Alive: 300\n\r"
+                                    "Connection: keep-alive\n\r"
+                                    "Pragma: no-cache\n\r"
+                                    "Cache-Control: no-cache\n\r\n\r";
      
 
      #ifdef __linux__
@@ -23,10 +24,9 @@ namespace net_conn {
      #include <unistd.h>
      #include <string.h>
 
-     void makeConnection(std::string addr, int port, std::string msg) {
+     void makeConnection(std::string addr, int port, std::string msg, argparser arguments) {
           int sock = 0, valread;
           struct sockaddr_in serv_addr;
-          const char *socketMsg = msg.c_str();
           char buffer[BUFLEN] = {0};
           
           serv_addr.sin_family = AF_INET;
@@ -44,10 +44,14 @@ namespace net_conn {
                throw std::runtime_error("Failed to connect to remote server");
           }
 
-          send(sock, socketMsg, strlen(socketMsg), 0);
+          send(sock, msg.c_str(), strlen(msg.c_str()), 0);
 
           valread = read(sock, buffer, BUFLEN);
           std::cout << "Server sent: " << buffer << std::endl;
+          
+     }
+
+     void server(int port, argparser arguments) {
           
      }
 
@@ -58,43 +62,112 @@ namespace net_conn {
 
      #pragma comment (lib, "ws2_32.lib")
 
-     void makeConnection(std::string addr, std::string msg, int port) {
+     void makeConnection(std::string addr, std::string msg, int port, argparser arguments) {
           WSAData wsaData;
           SOCKET client;
-          const char *socketAddr = addr.c_str();
           struct sockaddr_in server;
-          const char *message = msg.c_str();
+          const char *sendBuf;
           char server_reply[BUFLEN];
           int recv_size;
 
-          if(WSAStartup(MAKEWORD(2,2), &wsaData) != 0) { // Initializes winsock library
-               throw std::runtime_error("Error creating Winsock error: " + WSAGetLastError()); // Gets Winsock error code
-          }
-
-          if((client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) { // creates a TCP socket
-               throw std::runtime_error("Failed to create socket: " + WSAGetLastError());
-          }
-
-          server.sin_addr.s_addr = inet_addr(socketAddr); // converts address into useable address
+          server.sin_addr.s_addr = inet_addr(addr.c_str());
           server.sin_family = AF_INET;
           server.sin_port = htons(port);
+
+          if(WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+               throw std::runtime_error("Error creating Winsock error: " + WSAGetLastError());
+          }
+
+          if((client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
+               throw std::runtime_error("Failed to create socket: " + WSAGetLastError());
+          }
 
           if(connect(client, (struct sockaddr *)&server, sizeof(server)) < 0) {
                throw std::runtime_error("Failed to connect to server!");
           }
           std::cout << "Connected!" << std::endl;
+          while (true) {
+               std::cout << "> ";
+               std::getline(std::cin, msg);
+               sendBuf = msg.c_str();
+               std::cout << "Sending: " << sendBuf << std::endl;
 
-          if(send(client, msg.c_str(), strlen(message), 0) < 0) {
-               throw std::runtime_error("Failure to send message");
+               if(send(client, sendBuf, sizeof(msg), 0) < 0) {
+                    throw std::runtime_error("Failure to send a message");
+               }
+
+               if((recv_size = recv(client, server_reply, BUFLEN, 0)) == SOCKET_ERROR) {
+                    throw std::runtime_error("Recv failed!");
+               }
+               server_reply[recv_size] = '\0';
+               if(arguments.get_base64_obfuscation()) {
+                         std::string temp = b64::b64_decode((std::string)server_reply);
+                         temp.copy(server_reply, temp.size()+1);
+                         server_reply[temp.size()] = '\0';
+                    }
+               std::cout << "Server Replied: " << server_reply << std::endl;
+               break;
           }
-
-          if((recv_size = recv(client, server_reply, BUFLEN, 0)) == SOCKET_ERROR) {
-               throw std::runtime_error("Recv failed!");
-          }
-          server_reply[recv_size] = '\0';
-          std::cout << "From: " << server_reply << std::endl;
-
           closesocket(client);
+          WSACleanup();
+     }
+
+     void server(int port, argparser arguments) {
+          WSAData wsaData;
+          SOCKET s, new_socket;
+          struct sockaddr_in server, client;
+          int c, recv_size;
+          const char *message = "X Motha fuckin D";
+          char server_reply[BUFLEN] = {'0'};
+
+          server.sin_addr.s_addr = INADDR_ANY;
+          server.sin_family = AF_INET;
+          server.sin_port = htons(port);
+
+          if(WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+               throw std::runtime_error("Error creating Winsock error: " + WSAGetLastError());
+          }
+
+          if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
+               throw std::runtime_error("Failed to create socket: " + WSAGetLastError());
+          }
+
+          std::cout << "Binding to port: " << port << std::endl;
+          if(bind(s, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR) {
+               throw std::runtime_error("Failed to bind: " + WSAGetLastError());
+          }
+
+          std::cout << "Listening for new connections" << std::endl;
+          listen(s, 10);
+          c = sizeof(struct sockaddr_in);
+          
+          while ((new_socket = accept(s, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
+               std::cout << "Connection received from:" << new_socket << std::endl;
+               while(true) {
+                    if((recv_size = recv(new_socket, server_reply, BUFLEN, 0)) == SOCKET_ERROR) {
+                         throw std::runtime_error("Recv failed!");
+                    }
+                    server_reply[recv_size] = '\0';
+                    if(arguments.get_base64_obfuscation()) {
+                         std::string temp = b64::b64_decode((std::string)server_reply);
+                         temp.copy(server_reply, temp.size()+1);
+                         server_reply[temp.size()] = '\0';
+                    }
+                    std::cout << "Client sent: " << server_reply << std::endl;
+
+                    if(send(new_socket, "TWFu", sizeof("TWFu"), 0) < 0) {
+                         throw std::runtime_error("Failure to send message");
+                    }
+                    break;
+               }
+               break;
+               }
+
+          if(new_socket == INVALID_SOCKET) {
+               throw std::runtime_error("Failed to accept connection: " + WSAGetLastError());
+          }
+
+          closesocket(s);
           WSACleanup();
      }
 

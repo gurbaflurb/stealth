@@ -33,7 +33,7 @@ argparser::argparser(int argc, char ** argv, std::string newMode) {
 }
 
 void argparser::print_help() {
-    std::cout << "Usage: " << program << "<bfpv> <settings>\n"
+    std::cout << "Usage: " << program << "<bfpvrd> <settings>\n"
     << "Options:\n"
     << "\t-h, --help\t\tPrint this menu and quit\n"
     << "\t-p, --port\t\tSet the port the remote server is listening on\n"
