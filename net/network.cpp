@@ -168,7 +168,7 @@ namespace net_conn {
           c = sizeof(struct sockaddr_in);
           
           while ((new_socket = accept(s, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
-               std::cout << "Connection received from:" << new_socket << std::endl;
+               std::cout << "Connection received" << std::endl;
                while(true) {
                     if((recv_size = recv(new_socket, server_reply, BUFLEN, 0)) == SOCKET_ERROR) {
                          throw std::runtime_error("Recv failed!");
