@@ -41,3 +41,5 @@ argparser/*.dll
 *.exe
 *.out
 *.app
+server
+client
