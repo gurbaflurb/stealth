@@ -24,7 +24,7 @@ namespace net_conn {
      #include <unistd.h>
      #include <string.h>
 
-     void makeConnection(std::string addr, int port, std::string msg, argparser arguments) {
+     void makeConnection(std::string addr, std::string msg, int port, argparser arguments) {
           int sock = 0, valread;
           struct sockaddr_in serv_addr;
           char buffer[BUFLEN] = {0};
@@ -71,7 +71,45 @@ namespace net_conn {
      }
 
      void server(int port, argparser arguments) {
+          int server_fd, new_socket, valread;
+          struct sockaddr_in address;
+          int opt = 1;
+          int addrlen = sizeof(address);
+          char buffer[BUFLEN] = {0};
+          const char *reply = "200 Ok";
+
+          if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+               throw std::runtime_error("Error creating socket!");
+          }
+
+          if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+               throw std::runtime_error("Setsockopt error!");
+          }
+
+          address.sin_family = AF_INET;
+          address.sin_addr.s_addr = INADDR_ANY;
+          address.sin_port = htons(port);
+
+          if(bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+               throw std::runtime_error("Failed to bind to port!");
+          }
+          std::cout << "Bound to port: " << port << std::endl; 
           
+          if(listen(server_fd, 10) < 0) {
+               throw std::runtime_error("Failed to listen!");
+          }
+          std::cout << "Listening for new connections" << std::endl;
+          
+          if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
+               throw std::runtime_error("Failed to accept connection");
+          }
+          std::cout << "Connection recieved!" << std::endl;
+          while(true) {
+               valread = read(new_socket, buffer, BUFLEN);
+               std::cout << buffer << std::endl;
+               send(new_socket, reply, strlen(reply), 0);
+               break; // remove this to keep a back and forth with connected client
+          }
      }
 
      #elif __WIN32
