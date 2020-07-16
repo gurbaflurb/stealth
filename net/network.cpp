@@ -28,6 +28,7 @@ namespace net_conn {
           int sock = 0, valread;
           struct sockaddr_in serv_addr;
           char buffer[BUFLEN] = {0};
+          const char *sendBuf;
           
           serv_addr.sin_family = AF_INET;
           serv_addr.sin_port = htons(port);
@@ -44,10 +45,28 @@ namespace net_conn {
                throw std::runtime_error("Failed to connect to remote server");
           }
 
-          send(sock, msg.c_str(), strlen(msg.c_str()), 0);
+          while(true) {
+               std::cout << "> ";
+               std::getline(std::cin, msg);
 
-          valread = read(sock, buffer, BUFLEN);
-          std::cout << "Server sent: " << buffer << std::endl;
+               if(arguments.get_base64_obfuscation()) {
+                    msg = b64::b64_encode(msg);
+               }
+
+               sendBuf = msg.c_str();
+               std::cout << "Sending: " << sendBuf << std::endl;
+
+               send(sock, msg.c_str(), strlen(msg.c_str()), 0);
+
+               valread = read(sock, buffer, BUFLEN);
+               if(arguments.get_base64_obfuscation()) {
+                    std::string temp = b64::b64_decode((std::string)buffer);
+                    temp.copy(buffer, temp.size()+1);
+                    buffer[temp.size()] = '\0';
+               }
+               std::cout << "Server sent: " << buffer << std::endl;
+               break; // remove this to keep a back and forth with connected server
+          }
           
      }
 
@@ -85,10 +104,16 @@ namespace net_conn {
           if(connect(client, (struct sockaddr *)&server, sizeof(server)) < 0) {
                throw std::runtime_error("Failed to connect to server!");
           }
+
           std::cout << "Connected!" << std::endl;
           while (true) {
                std::cout << "> ";
                std::getline(std::cin, msg);
+
+               if(arguments.get_base64_obfuscation()) {
+                    msg = b64::b64_encode(msg);
+               }
+
                sendBuf = msg.c_str();
                std::cout << "Sending: " << sendBuf << std::endl;
 
@@ -106,7 +131,8 @@ namespace net_conn {
                          server_reply[temp.size()] = '\0';
                     }
                std::cout << "Server Replied: " << server_reply << std::endl;
-               break;
+
+               break; // remove this to keep a back and forth with server
           }
           closesocket(client);
           WSACleanup();
@@ -117,7 +143,7 @@ namespace net_conn {
           SOCKET s, new_socket;
           struct sockaddr_in server, client;
           int c, recv_size;
-          const char *message = "X Motha fuckin D";
+          const char *message = "200 OK";
           char server_reply[BUFLEN] = {'0'};
 
           server.sin_addr.s_addr = INADDR_ANY;
@@ -148,19 +174,29 @@ namespace net_conn {
                          throw std::runtime_error("Recv failed!");
                     }
                     server_reply[recv_size] = '\0';
+
                     if(arguments.get_base64_obfuscation()) {
                          std::string temp = b64::b64_decode((std::string)server_reply);
                          temp.copy(server_reply, temp.size()+1);
                          server_reply[temp.size()] = '\0';
-                    }
-                    std::cout << "Client sent: " << server_reply << std::endl;
+                         std::cout << "Client sent: " << server_reply << std::endl;
 
-                    if(send(new_socket, "TWFu", sizeof("TWFu"), 0) < 0) {
-                         throw std::runtime_error("Failure to send message");
+                         message = b64::b64_encode(message).c_str();
+                         if(send(new_socket, message, sizeof(message), 0) < 0) {
+                              throw std::runtime_error("Failure to send message");
+                         }
                     }
-                    break;
+                    else {
+                         std::cout << "Client sent: " << server_reply << std::endl;
+
+                         if(send(new_socket, message, sizeof(message), 0) < 0) {
+                              throw std::runtime_error("Failure to send message");
+                         }
+                    }
+                    
+                    break; // remove this to keep a back and forth with connected client
                }
-               break;
+               break; // remove this to keep server running forever
                }
 
           if(new_socket == INVALID_SOCKET) {
