@@ -7,8 +7,6 @@
 class desHandler {
     private:
         std::string key;
-        std::string text;
-        bool is_encrypted = false;
 
         short round_shift[16] = {1, 1, 2, 2, 
                                  2, 2, 2, 2, 
@@ -29,7 +27,7 @@ class desHandler {
                                        34, 2, 42, 10, 50, 18, 58, 26,
                                        33, 1, 41,  9, 49, 17, 57, 25};
 
-        short expansion_function[64] = {32,  1,  2,  3,  4,  5,
+        short expansion_function[48] = {32,  1,  2,  3,  4,  5,
                                          4,  5,  6,  7,  8,  9,
                                          8,  9, 10, 11, 12, 13,
                                         12, 13, 14, 15, 16, 17,
@@ -104,14 +102,17 @@ class desHandler {
                             0, 15,  6, 12, 10,  9, 13,  0, 15,  3,  3,  5,  5, 6, 8, 11};
 
 
-        void encrypt_msg_to_cipherText(std::string);
+        std::string run_cipher(std::string);
+
+        std::string generate_key();
+
+        std::string padMsg(std::string);
 
     public:
         desHandler();
         desHandler(std::string);
-        desHandler(std::string, std::string);
 
-        std::string run_cipher(std::string);
+        std::string run_DES(std::string);
 };
 
 #endif
