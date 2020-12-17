@@ -76,7 +76,7 @@ namespace net_conn {
           int opt = 1;
           int addrlen = sizeof(address);
           char buffer[BUFLEN] = {0};
-          const char *reply = "200 Ok";
+          std::string reply = "200 Ok";
 
           if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
                throw std::runtime_error("Error creating socket!");
@@ -104,10 +104,17 @@ namespace net_conn {
                throw std::runtime_error("Failed to accept connection");
           }
           std::cout << "Connection recieved!" << std::endl;
+
           while(true) {
                valread = read(new_socket, buffer, BUFLEN);
-               std::cout << buffer << std::endl;
-               send(new_socket, reply, strlen(reply), 0);
+               if(arguments.get_base64_obfuscation()) {
+                    std::cout << b64::b64_decode((std::string)buffer) << std::endl;
+                    reply = b64::b64_encode(reply).c_str();
+               }
+               else {
+                    std::cout << buffer << std::endl;
+               }
+               send(new_socket, reply.c_str(), strlen(reply.c_str()), 0);
                break; // remove this to keep a back and forth with connected client
           }
      }
