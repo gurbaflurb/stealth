@@ -6,8 +6,7 @@
 
 int main(int argc, char **argv) {
     
-    try
-    {
+    try {
         argparser arguments(argc, argv, "server");
         
         if(arguments.get_base64_obfuscation() && arguments.get_verbose()) {
@@ -15,8 +14,7 @@ int main(int argc, char **argv) {
         }
         net_conn::server(arguments.get_port(), arguments);
     }
-    catch(const std::exception& e)
-    {
+    catch(const std::exception& e) {
         std::cerr << "An error has occured:\n" << e.what() << '\n';
     }
     

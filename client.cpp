@@ -6,8 +6,7 @@
 
 int main(int argc, char **argv) {
 
-    try
-    {
+    try {
         argparser arguments(argc, argv, "client");
         
         if(arguments.get_base64_obfuscation()) {
@@ -26,8 +25,7 @@ int main(int argc, char **argv) {
             net_conn::makeConnection(arguments.get_remote_host(), arguments.get_data(), arguments.get_port(), arguments);
         }
     }
-    catch(const std::exception& e)
-    {
+    catch(const std::exception& e) {
         std::cerr << e.what() << '\n';
     }
     

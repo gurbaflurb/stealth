@@ -3,7 +3,7 @@ compile:
 	g++ -c net/network.cpp -o net/network.o
 	g++ -c b64/b64.cpp -o b64/b64.o
 	g++ -c argparser/argparser.cpp -o argparser/argparser.o
-	cd cryptopp && $(MAKE)
+	(cd ./cryptopp && make)
 
 windows:
 	@echo "compiling server and client for windows"

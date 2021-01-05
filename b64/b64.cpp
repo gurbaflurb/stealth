@@ -16,15 +16,12 @@ namespace b64 {
 
     std::string b64_encode(std::string msg){
         std::string encoded;
-        try
-        {
+        try {
             encoded = b64_file_encode(msg);
         }
-        catch(const std::exception& e)
-        {
+        catch(const std::exception& e) {
             encoded = b64_input_encode(msg);
         }
-        
         return encoded;
     }
 
@@ -34,7 +31,7 @@ namespace b64 {
         char s1, s2;
 
         if(encoded.length() % 4 != 0) {
-            std::cout << "Invalid input!" << std::endl;
+            throw std::runtime_error("Input length doesn't conform to base64 standards!");
         } else {
             for (int i = 0; i < (int)encoded.length(); i+=4) {
                 c0 = b64_get_decoded_binary(encoded[i]);
@@ -65,11 +62,10 @@ namespace b64 {
     }
 
     std::string b64_file_encode(std::string fileName) {
-        std::ifstream file;
+        std::ifstream file(fileName, std::ios::in | std::ios::binary);
         std::string encoded;
-        file.open(fileName, std::ios::in | std::ios::binary);
+        
         if(file.is_open()){
-            std::cout << "File was opened" << std::endl;
             char c;
             int leftOver = 0, tempLeftOver = 0;
             int count = 0;
