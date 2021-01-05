@@ -7,10 +7,9 @@ namespace b64 {
      * Encodes input into a base64 string
      * 
      * @param string is the input string for either a file name or just regular plaintext
-     * @param bool Designates whether the string should be treated as a file
      * @return Base64 encoded string
      */
-    std::string b64_encode(std::string, bool);
+    std::string b64_encode(std::string);
 
     /**
      * Decodes input from a base64 string
